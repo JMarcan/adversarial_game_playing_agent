@@ -58,9 +58,11 @@ class CustomPlayer(DataPlayer):
             # for each other move, select the optimal minimax move at a fixed search depth of 3 plies
                  
             # Debug print final board status
+            '''
             from isolation import DebugState
             dbstate = DebugState.from_state(state)
             print(dbstate)
+            '''
             
             self.queue.put(self.alpha_beta_search(state, depth=3)) 
     
@@ -68,7 +70,7 @@ class CustomPlayer(DataPlayer):
 
         def min_value(state, alpha, beta, depth):
             if state.terminal_test(): return state.utility(self.player_id)
-            if depth <= 0: return self.score(state)
+            if depth <= 0: return self.heuristics(state)
             value = float("inf")
             for action in state.actions():
                 value = min(value, max_value(state.result(action), alpha, beta, depth-1))
@@ -79,7 +81,7 @@ class CustomPlayer(DataPlayer):
 
         def max_value(state, alpha, beta, depth):
             if state.terminal_test(): return state.utility(self.player_id)
-            if depth <= 0: return self.score(state)
+            if depth <= 0: return self.heuristics(state)
             value = float("-inf")
             for action in state.actions():
                 value = max(value, min_value(state.result(action), alpha, beta, depth-1))
@@ -122,6 +124,15 @@ class CustomPlayer(DataPlayer):
 
         return max(state.actions(), key=lambda x: min_value(state.result(x), depth - 1))
     
+    def heuristics(self, state):
+        ''' Function to call a selected mutiple heuristiscs'''
+        
+        # call baseline heuristics
+        return self.score(state)
+        
+        #call advanced heuristics
+        #return self.advanced_heuristics(state)
+        
     #baseline heuristics
     def score(self, state):
         own_loc = state.locs[self.player_id]
@@ -129,3 +140,39 @@ class CustomPlayer(DataPlayer):
         own_liberties = state.liberties(own_loc)
         opp_liberties = state.liberties(opp_loc)
         return len(own_liberties) - len(opp_liberties)
+    
+    def advanced_heuristics(self, state):
+        own_loc = state.locs[self.player_id]
+        opp_loc = state.locs[1 - self.player_id]
+        own_liberties = state.liberties(own_loc)
+        opp_liberties = state.liberties(opp_loc)
+        
+        own_distance_from_center = self.distance_from_center(own_loc)
+        opp_distance_from_center = self.distance_from_center(opp_loc)
+        own_distance_to_borders = self.distance_to_borders(own_loc)
+        opp_distance_to_borders = self.distance_to_borders(opp_loc)
+        
+        blank_rate = 1 - state.ply_count / (_HEIGHT * _WIDTH)
+        
+        # if the loc close to center and away from borders, maximize move
+        weight = (opp_distance_from_center - own_distance_from_center) + (own_distance_to_borders - opp_distance_to_borders)
+        if weight > 0:
+            # advanced heuristics based on 
+            return weight * len(own_liberties) - blank_rate * len(opp_liberties)
+        else:
+            #standard heuristics based on liberties
+            return len(own_liberties) - len(opp_liberties)
+        
+    def distance_from_center(self, loc):
+        # Use Mahattan Distance
+        center = self.xy_index_loc(57)
+        player = self.xy_index_loc(loc)
+        return abs(center[0] - player[0]) + abs(center[1] - player[1])
+
+    def distance_to_borders(self, loc):
+        # Get the distance to the closest border
+        player = self.xy_index_loc(loc)
+        return min(player[0], player[1], _WIDTH - 1 - player[0], _HEIGHT - 1 - player[1])
+
+    def xy_index_loc(self, loc):
+        return (loc % (_WIDTH + 2), loc // (_WIDTH + 2))
