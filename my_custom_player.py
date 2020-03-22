@@ -1,6 +1,11 @@
+import random
 
+from isolation.isolation import _WIDTH, _HEIGHT
 from sample_players import DataPlayer
 
+_CORNERS = [0, 10, 104, 114]
+_WALLS = list(range(1, 10)) + list(range(105, 114)) + [i * (_WIDTH + 2) for i in range(1, _HEIGHT - 1)] + [i * (_WIDTH + 2) + (_WIDTH - 1) for i in range(1, _HEIGHT - 1)]
+_CENTER = 57
 
 class CustomPlayer(DataPlayer):
     """ Implement your own agent to play knight's Isolation
@@ -36,18 +41,28 @@ class CustomPlayer(DataPlayer):
           Refer to (and use!) the Isolation.play() function to run games.
         **********************************************************************
         """
-        # TODO: Replace the example implementation below with your own search
-        #       method by combining techniques from lecture
-        #
-        # EXAMPLE: choose a random move without any search--this function MUST
-        #          call self.queue.put(ACTION) at least once before time expires
-        #          (the timer is automatically managed for you)
-        import random
-        if state.ply_count < 2:
-            self.queue.put(random.choice(state.actions()))
-        else:
-            self.queue.put(self.minimax(state, depth=3))          
         
+
+        if state.ply_count == 0:
+            # if we do the first move, select the center
+            self.queue.put(_CENTER)
+        elif state.ply_count == 1:
+            # if we do the second move, select wide opening
+            opens = [i for i in state.actions() if i not in _CORNERS and i not in _WALLS and i != 57]
+            self.queue.put(random.choice(opens))
+            
+        else:
+            # for each other move, select the optimal minimax move at a fixed search depth of 3 plies
+                 
+            # Debug print final board status
+            from isolation import DebugState
+            dbstate = DebugState.from_state(state)
+            print(dbstate)
+            
+            self.queue.put(self.minimax(state, depth=3)) 
+        
+       
+
     def minimax(self, state, depth):
 
         def min_value(state, depth):
@@ -67,12 +82,10 @@ class CustomPlayer(DataPlayer):
             return value
 
         return max(state.actions(), key=lambda x: min_value(state.result(x), depth - 1))
-
+    
     def score(self, state):
         own_loc = state.locs[self.player_id]
         opp_loc = state.locs[1 - self.player_id]
         own_liberties = state.liberties(own_loc)
         opp_liberties = state.liberties(opp_loc)
         return len(own_liberties) - len(opp_liberties)
-
-
