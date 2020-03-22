@@ -1,4 +1,5 @@
 import random
+import time
 
 from isolation.isolation import _WIDTH, _HEIGHT
 from sample_players import DataPlayer
@@ -6,6 +7,8 @@ from sample_players import DataPlayer
 _CORNERS = [0, 10, 104, 114]
 _WALLS = list(range(1, 10)) + list(range(105, 114)) + [i * (_WIDTH + 2) for i in range(1, _HEIGHT - 1)] + [i * (_WIDTH + 2) + (_WIDTH - 1) for i in range(1, _HEIGHT - 1)]
 _CENTER = 57
+
+from functools import reduce
 
 class CustomPlayer(DataPlayer):
     """ Implement your own agent to play knight's Isolation
@@ -59,11 +62,47 @@ class CustomPlayer(DataPlayer):
             dbstate = DebugState.from_state(state)
             print(dbstate)
             
-            self.queue.put(self.minimax(state, depth=3)) 
-        
-       
+            self.queue.put(self.alpha_beta_search(state, depth=3)) 
+    
+    def alpha_beta_search(self, state, depth):
 
+        def min_value(state, alpha, beta, depth):
+            if state.terminal_test(): return state.utility(self.player_id)
+            if depth <= 0: return self.score(state)
+            value = float("inf")
+            for action in state.actions():
+                value = min(value, max_value(state.result(action), alpha, beta, depth-1))
+                if value <= alpha:
+                    return value
+                beta = min(beta, value)
+            return value
+
+        def max_value(state, alpha, beta, depth):
+            if state.terminal_test(): return state.utility(self.player_id)
+            if depth <= 0: return self.score(state)
+            value = float("-inf")
+            for action in state.actions():
+                value = max(value, min_value(state.result(action), alpha, beta, depth-1))
+                if value >= beta:
+                    alpha = max(alpha, value)
+            return value
+
+        alpha = float("-inf")
+        beta = float("inf")
+        best_score = float("-inf")
+        best_move = None
+        for action in state.actions():
+            v = min_value(state.result(action), alpha, beta, depth-1)
+            alpha = max(alpha, v)
+            if v > best_score:
+                best_score = v
+                best_move = action
+        return best_move
+
+
+    
     def minimax(self, state, depth):
+        #minimax taken from sample_players.py code
 
         def min_value(state, depth):
             if state.terminal_test(): return state.utility(self.player_id)
@@ -83,6 +122,7 @@ class CustomPlayer(DataPlayer):
 
         return max(state.actions(), key=lambda x: min_value(state.result(x), depth - 1))
     
+    #baseline heuristics
     def score(self, state):
         own_loc = state.locs[self.player_id]
         opp_loc = state.locs[1 - self.player_id]
