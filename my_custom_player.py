@@ -96,7 +96,7 @@ class CustomPlayer(DataPlayer):
         for action in state.actions():
             v = min_value(state.result(action), alpha, beta, depth-1)
             alpha = max(alpha, v)
-            if v > best_score:
+            if v >= best_score:
                 best_score = v
                 best_move = action
         return best_move
@@ -128,10 +128,10 @@ class CustomPlayer(DataPlayer):
         ''' Function to call a selected mutiple heuristiscs'''
         
         # call baseline heuristics
-        return self.score(state)
+        # return self.score(state)
         
         #call advanced heuristics
-        #return self.advanced_heuristics(state)
+        return self.advanced_heuristics(state)
         
     #baseline heuristics
     def score(self, state):
@@ -152,16 +152,18 @@ class CustomPlayer(DataPlayer):
         own_distance_to_borders = self.distance_to_borders(own_loc)
         opp_distance_to_borders = self.distance_to_borders(opp_loc)
         
-        blank_rate = 1 - state.ply_count / (_HEIGHT * _WIDTH)
+        unvisited_fields_rate = 1 - state.ply_count / (_HEIGHT * _WIDTH)
+        visited_fields_rate = 1 - unvisited_fields_rate
         
         # if the loc close to center and away from borders, maximize move
         weight = (opp_distance_from_center - own_distance_from_center) + (own_distance_to_borders - opp_distance_to_borders)
         if weight > 0:
-            # advanced heuristics based on 
-            return weight * len(own_liberties) - blank_rate * len(opp_liberties)
+            # advanced heuristics based on distance from the center
+            # return weight * len(own_liberties) - unvisited_fiels_rate * len(opp_liberties)
+            return ((weight / 2)*unvisited_fields_rate + len(own_liberties)) - (1+visited_fields_rate)*len(opp_liberties)
         else:
-            #standard heuristics based on liberties
-            return len(own_liberties) - len(opp_liberties)
+            #standard heuristics based only on liberties
+            return len(own_liberties) - (1+visited_fields_rate)*len(opp_liberties)
         
     def distance_from_center(self, loc):
         # Use Mahattan Distance
