@@ -1,7 +1,5 @@
 # Build an Adversarial Game Playing Agent
 
-![Example game of isolation on a square board](assets/game_isolation.gif)
-
 ## Motivation
 AI is an important topic for robotics and self-driving cars.
 I did this project as part of Udacity, Artificial Intelligence Nanodegree.
@@ -10,6 +8,7 @@ I did this project as part of Udacity, Artificial Intelligence Nanodegree.
 The goal of the project was to implement AI Player for the game of isolation in `my_custom_player.py`, method `get_action()`:  
 I have based my AI player on **minimax search, optimized with alpha-beta pruning, enhanced with heuristics**.
 
+![Example game of isolation on a square board](assets/game_isolation.gif)
 
 ## Isolation Game rules
 In the game Isolation, two players each control their single token and alternate taking turns moving the token from one cell to another on a rectangular grid. Whenever a token occupies a cell, that cell becomes blocked for the remainder of the game. An open cell available for a token to move into is called a "liberty". The first player with no remaining liberties for their token loses the game, and their opponent is declared the winner.
