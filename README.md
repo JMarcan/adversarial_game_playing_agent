@@ -28,13 +28,13 @@ Heuristic code:
 = ((weight / 2)*unvisited_fields_rate + len(own_liberties)) - (1+visited_fields_rate)*len(opp_liberties)
 ```
 ## Usage
-- 1. Run `run_match.py` to test the algorithm against different AI player
+1. Run `run_match.py` to test the algorithm against different AI player
     - python run_match.py -f -r 10 -o GREEDY -p 4
-    -f means fair match. If you have 10 rounds, then your player will start 10 times and the opponent player will start 10 times (in total 2x - 20 games)
-    -r means the number of rounds that will be played between our AI player and computer
-    -o means AI opponent against which will the algorithm play. Available are: RANDOM (opponent choses random moves), GREEDY (opponent is based on greedy search), MINIMAX (opponent is based on minimax algorithm), SELF (our AI player will play against itself) 
+    - f means fair match. If you have 10 rounds, then your player will start 10 times and the opponent player will start 10 times (in total 2x - 20 games)
+    - r means the number of rounds that will be played between our AI player and computer
+    - o means AI opponent against which will the algorithm play. Available are: RANDOM (opponent choses random moves), GREEDY (opponent is based on greedy search), MINIMAX (opponent is based on minimax algorithm), SELF (our AI player will play against itself) 
 
-- 2. You can experiment with an existing AI algorithm in `my_customer_player.py `
+2. You can experiment with an existing AI algorithm in `my_customer_player.py `
 
 ## Libraries used
 Python 3
